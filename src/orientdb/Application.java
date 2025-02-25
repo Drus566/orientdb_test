@@ -3,12 +3,16 @@ package orientdb;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
+import com.orientechnologies.orient.core.db.object.ODatabaseObject;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OEdge;
+import com.orientechnologies.orient.core.record.OElement;
 import com.orientechnologies.orient.core.record.OVertex;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
+import com.orientechnologies.orient.object.db.OrientDBObject;
+import orientdb.domain.Detail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,19 +23,64 @@ public class Application {
     }
 
     Application() {
-        System.out.println("HELLO");
         OrientDB orient = new OrientDB("remote:172.17.125.80", OrientDBConfig.defaultConfig());
         ODatabaseSession db = orient.open("test","root", "3123");
 
-        createSchema(db);
+        OClass c = db.createClassIfNotExist("Fire");
+//        OClass i = db.createClassIfNotExist("Ice");
 
-        createPeople(db);
+//        c.createProperty("name", OType.STRING);
 
-        executeAQuery(db);
+        OElement element = db.newInstance("Fire");
+        System.out.println(element.getRecord());
 
-        executeAnotherQuery(db);
-        db.close();
-        orient.close();
+        element.setProperty("surname", "Kovalsky");
+        System.out.println(element.getIdentity()); //this will print a temporary RID (negative cluster position)
+        element.save();
+        System.out.println(element.getIdentity()); //this will print a temporary RID (negative cluster position)
+        db.commit();
+        System.out.println(element.getIdentity()); //this will print a temporary RID (negative cluster position)
+
+        c = db.getClass("Fire");
+        if (c.existsProperty("surname")) {
+            System.out.println("EXISTS");
+        }
+        for (String s: element.getPropertyNames()) {
+            System.out.println(s);
+        };
+
+
+//        OrientDBObject orientDB = new OrientDBObject(orient);
+//        ODatabaseObject db = orientDB.open("test","root", "3123");
+//
+//        db.getEntityManager().registerEntityClass(Detail.class);
+//
+//
+//        Detail detail;
+//
+//        for (int i = 0; i < 10000; i++) {
+//            detail = db.newInstance(Detail.class);
+//            detail.setName("Болт" + i);
+//            detail.setType("Крепеж");
+//            db.save(detail);
+//        }
+//        for (Detail o: db.browseClass(Detail.class)){
+//            System.out.println(o.getName());
+//        }
+
+//        System.out.println("HELLO");
+//        OrientDB orient = new OrientDB("remote:172.17.125.80", OrientDBConfig.defaultConfig());
+//        ODatabaseSession db = orient.open("test","root", "3123");
+//
+//        createSchema(db);
+//
+//        createPeople(db);
+//
+//        executeAQuery(db);
+//
+//        executeAnotherQuery(db);
+//        db.close();
+//        orient.close();
     }
 
     private static void createSchema(ODatabaseSession db) {
